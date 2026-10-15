@@ -1,0 +1,8 @@
+.desktop-preview{height:100dvh;overflow:hidden;background:radial-gradient(ellipse at top,#d0d7bf 0%,#899c55 100%)}
+.preview-device{position:fixed;left:50%;top:50%;width:430px;height:932px;transform:translate(-50%,-50%) scale(var(--preview-scale));border-radius:32px;overflow:hidden;background:#fff;box-shadow:0 20px 65px #20231d33}
+.preview-device iframe{display:block;border:0;width:430px;height:932px;background:#fff}
+/* Hide the app scrollbar without changing scrolling behavior (including the desktop phone preview). */
+@media (max-width:600px){
+  html,body{scrollbar-width:none;-ms-overflow-style:none}
+  html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
+}

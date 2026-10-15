@@ -1,0 +1,21 @@
+@font-face {
+  font-family: 'Hahmlet';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url(assets/fonts/BngXUXpCQ3nKpIo0TfPyfCdXfaeU4RgUONjo.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Hahmlet';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(assets/fonts/BngXUXpCQ3nKpIo0TfPyfCdXfaeU4RhKONjo.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Hahmlet';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(assets/fonts/BngXUXpCQ3nKpIo0TfPyfCdXfaeU4RiUP9jo.ttf) format('truetype');
+}
