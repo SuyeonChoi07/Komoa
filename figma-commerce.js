@@ -145,7 +145,7 @@ function fitCommerceFrame(){
 }
 function wireCommerce(root,id){
   for(const card of all('[data-name="검색결과"]',root)){
-    const productId=PRODUCT_NODES[card.dataset.nodeId],product=CATALOGUE[productId];if(!product)continue;card.dataset.productId=productId;if(productId==='soso-oatmeal-pattern'){const image=card.querySelector('img');productImage(image,product);image.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:contain';card.querySelector('[data-node-id$=";239:2454"]').textContent=product.title;}
+    const productId=PRODUCT_NODES[card.dataset.nodeId],product=CATALOGUE[productId];if(!product)continue;card.dataset.productId=productId;if(productId==='soso-oatmeal-pattern'){const image=card.querySelector('img');productImage(image,product);image.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center';card.querySelector('[data-node-id$=";239:2454"]').textContent=product.title;}
     interactive(card,()=>openProduct(productId),product.name+' 상세보기');
     wireProductSave(card.querySelector('[data-name*="bookmark"]'),productId);
     const label=all('p',card).find(p=>p.textContent.includes('장바구니 담기'));if(label){const button=label.parentElement;interactive(button,()=>addToCart(productId,button),product.name+' 장바구니 담기');}
