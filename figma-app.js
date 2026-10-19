@@ -7,6 +7,7 @@ let state;try{state=JSON.parse(localStorage.getItem('komoa-figma-v2')||'{}')}cat
 let pagePush=null;
 let current='',overlay=null,lastFocus=null,historyStack=[],uploadedPhoto='';
 const q=(id,root=document)=>root.querySelector(`[data-node-id="${id}"]`),all=(sel,root=document)=>[...root.querySelectorAll(sel)];
+function ownProfileAvatar(previous){return state.avatar||(previous&&previous!=='assets/figma-exact/24baf.png'?previous:'assets/default-avatar.jpg')}
 function announce(text){document.getElementById('status').textContent=text}
 function save(){try{localStorage.setItem('komoa-figma-v2',JSON.stringify(state))}catch{announce('저장 공간을 확인해 주세요.')}}
 function setText(id,text,root=document){const n=q(id,root);if(n)(n.querySelector('p')||n).textContent=text}
@@ -157,7 +158,7 @@ const ps=all('p',root);for(const[needle,key,label]of[['뜨개하루','profileNam
 const avatar=root.querySelector('[data-name="프로필 사진"]');if(avatar)fileUpload(avatar,true);const cancel=ps.find(p=>p.textContent.trim()==='취소');if(cancel)interactive(cancel.parentElement,back);
 }
 if(['518:3476','518:4830','518:4895'].includes(id))all('p',root).forEach(p=>{const t=p.textContent.trim();if(t==='뜨개하루'&&state.fields.profileName)p.textContent=state.fields.profileName;if(t==='@knitting_days'&&state.fields.profileHandle)p.textContent=state.fields.profileHandle;if(t.startsWith('느리게, 오래')&&state.fields.profileBio)p.textContent=state.fields.profileBio});
-if(state.avatar){const ownAvatar=root.querySelector('[data-name="프로필"] [data-name="사진"] img')||root.querySelector('[data-name="프로필 사진"] img');if(ownAvatar)ownAvatar.src=state.avatar;}
+{const ownAvatar=root.querySelector('[data-name="프로필"] [data-name="사진"] img')||root.querySelector('[data-name="프로필 사진"] img');if(ownAvatar)ownAvatar.src=ownProfileAvatar();}
 if(id==='518:3710'){[['518:3744','518:3750'],['518:3746','518:3760'],['518:3748','518:3765']].forEach(([tab,target])=>interactive(q(tab,root),()=>q(target,root)?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'center'})));}
 if(id==='518:3469'){const p=all('p',root).find(p=>p.textContent.includes('프로젝트 이어서 기록'));if(p)interactive(p,()=>go('counter'))}
 all('[data-name]',root).filter(n=>/bookmark|heart/.test(n.dataset.name)).forEach(n=>{const key=n.dataset.nodeId,list=/heart/.test(n.dataset.name)?'liked':'saved';interactive(n,()=>{const a=state[list],at=a.indexOf(key);at<0?a.push(key):a.splice(at,1);n.setAttribute('aria-pressed',String(at<0));save();announce(at<0?'저장했습니다.':'취소했습니다.')},list==='liked'?'좋아요':'저장');n.setAttribute('aria-pressed',String(state[list].includes(key)))});

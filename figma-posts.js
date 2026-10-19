@@ -35,18 +35,18 @@ function wireCommunityTabs(root,id){
 }
 function initPostsState(){
   state.posts=Array.isArray(state.posts)?state.posts:[];
-  if(state.post&&!state.posts.some(post=>post.id==='own')){state.posts.push({id:'own',...state.post,author:state.fields.profileName||'뜨개하루',avatar:state.avatar||'assets/figma-exact/24baf.png',time:'내 게시글'});delete state.post}
+  if(state.post&&!state.posts.some(post=>post.id==='own')){state.posts.push({id:'own',...state.post,author:state.fields.profileName||'뜨개하루',avatar:ownProfileAvatar(),time:'내 게시글'});delete state.post}
   state.liked=Array.isArray(state.liked)?state.liked:[];
   state.liked=[...new Set(state.liked.map(key=>{const match=String(key).match(/^I(518:356[789]|518:357[01]);.*258:1621$/);return match?'post:'+match[1]:key==='I518:3547;264:1564;258:1621'||key==='I518:5132;258:1643;258:1621'?'post:518:3567':key}))];
   state.demoPostEpoch??=Date.now();seedPostComments();seedPostLikes();save();
 }
 function publishPost(){
-  const entry={category:state.composeCommunity==='qna'?'qna':'community',id:'user-'+crypto.randomUUID(),title:state.fields.postTitle.trim(),body:state.fields.postBody.trim(),image:uploadedPhoto,author:state.fields.profileName||'뜨개하루',avatar:state.avatar||'assets/figma-exact/24baf.png',createdAt:new Date().toISOString(),time:'방금 전'};
+  const entry={category:state.composeCommunity==='qna'?'qna':'community',id:'user-'+crypto.randomUUID(),title:state.fields.postTitle.trim(),body:state.fields.postBody.trim(),image:uploadedPhoto,author:state.fields.profileName||'뜨개하루',avatar:ownProfileAvatar(),createdAt:new Date().toISOString(),time:'방금 전'};
   state.posts.unshift(entry);seedPostComments();seedPostLikes();
   try{localStorage.setItem('komoa-figma-v2',JSON.stringify(state))}catch{state.posts.shift();announce('저장 공간이 부족합니다. 사진 크기를 줄인 후 다시 시도해 주세요.');return}
   delete state.fields.postTitle;delete state.fields.postBody;uploadedPhoto='';delete state.postAttachment;save();go(entry.category==='qna'?'qna':'community?tab=following');announce('게시글을 올렸습니다.');
 }
-function ownPostProfile(entry){return state.posts.some(post=>post.id===entry.id)?{...entry,author:state.fields.profileName||entry.author,avatar:state.avatar||entry.avatar}:entry}
+function ownPostProfile(entry){return state.posts.some(post=>post.id===entry.id)?{...entry,author:state.fields.profileName||entry.author,avatar:ownProfileAvatar(entry.avatar)}:entry}
 function createPostCard(entry){
   entry=ownPostProfile(entry);
   const card=cloneCommerceRow(POST_CATALOGUE['518:3567'].template,entry.id);delete card.dataset.productId;card.dataset.postId=entry.id;
