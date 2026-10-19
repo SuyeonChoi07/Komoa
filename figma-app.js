@@ -131,7 +131,7 @@ function go(to,push=true,transition=null,duration=.3,restoreY=0){
       animateCommerceRoute({outgoing,incoming,cartEnter,cartExit,productEnter,productExit,thumbnail,productId});return;
     }
     if(profileDirection){
-      const listSelector='.profile-project-list,.saved-products,[data-name="타임라인"]';
+      const listSelector='.profile-project-list,.saved-products,[data-name="타임라인"],[data-node-id="518:3494"]';
       const oldList=outgoing.querySelector(listSelector),newList=incoming.querySelector(listSelector);
       outgoing.firstElementChild.style.visibility='hidden';
       const animations=[];
