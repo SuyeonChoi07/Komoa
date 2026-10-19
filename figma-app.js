@@ -89,6 +89,7 @@ function go(to,push=true,transition=null,duration=.3){
   if(window.deferButtonNavigation?.(()=>go(to,push,transition,duration)))return;
   const [base,params='']=to.split('?'),id=aliases[base]||routes[base]||base;if(!S[id])return;
   if(id===routes.notifications){if(!current)go('home',false);showOverlay(id);return}
+  const loginFade=current===routes.login&&[routes.signup,routes.home].includes(id);
   const onboardingLogin=['631:1201','633:4646','633:4662'].includes(current)&&id===routes.login;
   const onboardingTransition=onboardingLogin||transition==='ONBOARDING_PUSH'||transition==='ONBOARDING_DISSOLVE';
   const composeEnter=id===routes.compose&&[routes.community,routes.qna].includes(current),composeExit=current===routes.compose&&[routes.community,routes.qna].includes(id);
@@ -96,7 +97,7 @@ function go(to,push=true,transition=null,duration=.3){
   const from=rank(current),toRank=rank(id),direction=Math.sign(toRank-from);
   if(pagePush){pagePush();pagePush=null}
   let outgoing;
-  if(((transition==='NAV_PUSH'&&from>=0&&toRank>=0&&direction)||composeEnter||composeExit||onboardingTransition)&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
+  if(((transition==='NAV_PUSH'&&from>=0&&toRank>=0&&direction)||composeEnter||composeExit||onboardingTransition||loginFade)&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
     const rect=app.getBoundingClientRect(),layer=document.createElement('div'),copy=frame.cloneNode(true);
     layer.className='page-push-viewport';layer.inert=true;layer.setAttribute('aria-hidden','true');
     Object.assign(layer.style,{left:rect.left+'px',width:rect.width+'px'});
@@ -120,6 +121,13 @@ function go(to,push=true,transition=null,duration=.3){
   commit();
   if(outgoing){
     const timing={duration:300,easing:'cubic-bezier(0.22,1,0.36,1)'},incoming=frame.firstElementChild;
+    if(loginFade){
+      const fadeTiming={duration:300,easing:'ease-in-out'};
+      const animations=[outgoing.animate([{opacity:1},{opacity:0}],fadeTiming)];
+      const targets=[incoming,...document.querySelectorAll('#fixed-header,#fixed-navigation,.nav-bg')].filter(node=>!node.hidden);
+      for(const target of targets)animations.push(target.animate([{opacity:0},{opacity:1}],fadeTiming));
+      const cleanup=()=>{animations.forEach(animation=>animation.cancel());outgoing.remove();if(pagePush===cleanup)pagePush=null};pagePush=cleanup;Promise.all(animations.map(animation=>animation.finished)).then(cleanup,()=>{});return;
+    }
     if(onboardingTransition){
       const dissolve=transition==='ONBOARDING_DISSOLVE',timing={duration:300,easing:dissolve?'ease-in-out':'ease-out'};
       const oldScreen=outgoing.querySelector('.onboarding-screen');
