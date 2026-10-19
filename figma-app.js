@@ -121,6 +121,16 @@ function go(to,push=true,transition=null,duration=.3){
     const timing={duration:300,easing:'cubic-bezier(0.22,1,0.36,1)'},incoming=frame.firstElementChild;
     if(onboardingTransition){
       const dissolve=transition==='ONBOARDING_DISSOLVE',timing={duration:300,easing:dissolve?'ease-in-out':'ease-out'};
+      const oldScreen=outgoing.querySelector('.onboarding-screen');
+      if(!dissolve&&oldScreen&&incoming.matches('.onboarding-screen')){
+        // Keep both photos stationary; slide only the foreground elements.
+        oldScreen.style.background='transparent';
+        const animations=[oldScreen.querySelector('.onboarding-photo').animate([{opacity:1},{opacity:0}],timing)];
+        for(const child of oldScreen.children)if(!child.matches('.onboarding-photo'))animations.push(child.animate([{translate:'0 0'},{translate:'-430px 0'}],timing));
+        for(const child of incoming.children)if(!child.matches('.onboarding-photo'))animations.push(child.animate([{translate:'430px 0'},{translate:'0 0'}],timing));
+        app.style.overflow='clip';
+        const cleanup=()=>{animations.forEach(animation=>animation.cancel());outgoing.remove();app.style.removeProperty('overflow');if(pagePush===cleanup)pagePush=null};pagePush=cleanup;Promise.all(animations.map(animation=>animation.finished)).then(cleanup,()=>{});return;
+      }
       const exit=outgoing.animate(dissolve?[{opacity:1},{opacity:0}]:[{translate:'0 0'},{translate:'-100% 0'}],timing);
       const enter=dissolve?null:incoming.animate([{translate:'100% 0'},{translate:'0 0'}],timing);
       app.style.overflow='clip';
