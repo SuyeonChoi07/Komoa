@@ -89,7 +89,8 @@ function go(to,push=true,transition=null,duration=.3){
   if(window.deferButtonNavigation?.(()=>go(to,push,transition,duration)))return;
   const [base,params='']=to.split('?'),id=aliases[base]||routes[base]||base;if(!S[id])return;
   if(id===routes.notifications){if(!current)go('home',false);showOverlay(id);return}
-  const onboardingTransition=transition==='ONBOARDING_PUSH'||transition==='ONBOARDING_DISSOLVE';
+  const onboardingLogin=['631:1201','633:4646','633:4662'].includes(current)&&id===routes.login;
+  const onboardingTransition=onboardingLogin||transition==='ONBOARDING_PUSH'||transition==='ONBOARDING_DISSOLVE';
   const composeEnter=id===routes.compose&&[routes.community,routes.qna].includes(current),composeExit=current===routes.compose&&[routes.community,routes.qna].includes(id);
   const rank=value=>value===routes.home?0:[routes.community,routes.qna].includes(value)?1:value===routes.projects?2:['518:3476','518:4830','518:4895'].includes(value)?3:-1;
   const from=rank(current),toRank=rank(id),direction=Math.sign(toRank-from);
@@ -122,6 +123,15 @@ function go(to,push=true,transition=null,duration=.3){
     if(onboardingTransition){
       const dissolve=transition==='ONBOARDING_DISSOLVE',timing={duration:300,easing:dissolve?'ease-in-out':'ease-out'};
       const oldScreen=outgoing.querySelector('.onboarding-screen');
+      if(onboardingLogin&&oldScreen){
+        const photo=oldScreen.querySelector('.onboarding-photo');
+        incoming.querySelector('.login-photo').after(photo);
+        oldScreen.style.background='transparent';
+        const animations=[photo.animate([{opacity:1},{opacity:0}],{duration:300,easing:'ease-in-out'}),outgoing.animate([{opacity:1},{opacity:0}],{duration:150,easing:'ease-out',fill:'forwards'})];
+        for(const element of incoming.querySelectorAll('.login-sheet,.login-inner'))animations.push(element.animate([{translate:'0 592px'},{translate:'0 0'}],{duration:300,easing:'ease-out'}));
+        app.style.overflow='clip';
+        const cleanup=()=>{animations.forEach(animation=>animation.cancel());photo.remove();outgoing.remove();app.style.removeProperty('overflow');if(pagePush===cleanup)pagePush=null};pagePush=cleanup;Promise.all(animations.map(animation=>animation.finished)).then(cleanup,()=>{});return;
+      }
       if(!dissolve&&oldScreen&&incoming.matches('.onboarding-screen')){
         // Keep shared controls and panel stationary; fade the photo and push only copy.
         oldScreen.style.background='transparent';
