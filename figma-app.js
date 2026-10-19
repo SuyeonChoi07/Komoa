@@ -126,6 +126,8 @@ function go(to,push=true,transition=null,duration=.3){
         // Keep shared controls and panel stationary; fade the photo and push only copy.
         oldScreen.style.background='transparent';
         const animations=[oldScreen.querySelector('.onboarding-photo').animate([{opacity:1},{opacity:0}],timing)];
+        const previousDots=[...oldScreen.querySelectorAll('.onboarding-dots span')];
+        incoming.querySelectorAll('.onboarding-dots span').forEach((dot,index)=>{const previous=previousDots[index];if(previous)animations.push(dot.animate([{width:getComputedStyle(previous).width,backgroundColor:getComputedStyle(previous).backgroundColor},{width:getComputedStyle(dot).width,backgroundColor:getComputedStyle(dot).backgroundColor}],{duration:300,easing:'ease'}))});
         for(const child of oldScreen.children)if(!child.matches('.onboarding-photo,.onboarding-copy,.onboarding-skip'))child.remove();
         // The outgoing photo must not cover the incoming fixed controls or white panel.
         oldScreen.querySelector('.onboarding-photo').style.clipPath='inset(0 0 313px 0)';
