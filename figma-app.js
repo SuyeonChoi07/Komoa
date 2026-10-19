@@ -316,8 +316,10 @@ function animateCommerceRoute({outgoing,incoming,cartEnter,cartExit,productEnter
     if(source&&target&&source.width&&target.width){
       const image=document.createElement('img');image.src=productEnter?thumbnail.src:photo.querySelector('img').src;image.alt='';image.className='product-transition-image';
       Object.assign(image.style,{position:'fixed',left:target.left+'px',top:target.top+'px',width:target.width+'px',height:target.height+'px',objectFit:'cover',zIndex:'45',pointerEvents:'none',transformOrigin:'top left',maxWidth:'none'});document.body.append(image);temporary.push(image);
-      // Animate the actual box, so object-fit crops naturally as its aspect ratio changes.
-      animate(image,[{left:source.left+'px',top:source.top+'px',width:source.width+'px',height:source.height+'px'},{left:target.left+'px',top:target.top+'px',width:target.width+'px',height:target.height+'px'}]);photo.style.visibility='hidden';hidden.push(photo);
+      // Keep a fixed aspect ratio throughout the zoom.
+      const zoom=source.width/target.width;
+      const transform=`translate(${source.left-target.left}px,${source.top-target.top}px) scale(${zoom})`;
+      animate(image,[{transform},{transform:'translate(0,0) scale(1)'}]);photo.style.visibility='hidden';hidden.push(photo);
     }
   }
   app.style.overflow='clip';
