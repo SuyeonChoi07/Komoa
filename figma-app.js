@@ -91,6 +91,9 @@ function go(to,push=true,transition=null,duration=.3,restoreY=0){
   if(id===routes.notifications){if(!current)go('home',false);showOverlay(id);return}
   const profileOrder=['518:4895','518:4830','518:3476'];
   const profileDirection=profileOrder.includes(current)&&profileOrder.includes(id)?Math.sign(profileOrder.indexOf(id)-profileOrder.indexOf(current)):0;
+  const communityRank=(route,tab)=>route===routes.qna?2:route===routes.community?(tab==='following'?1:0):-1;
+  const communityFrom=communityRank(current,state.communityTab),communityTo=communityRank(id,new URLSearchParams(params).get('tab'));
+  const communityDirection=communityFrom>=0&&communityTo>=0?Math.sign(communityTo-communityFrom):0;
   const cartEnter=id===routes.cart&&current!==id&&!!current,cartExit=current===routes.cart&&id!==current;
   const productEnter=id===routes.product&&current!==id,productExit=current===routes.product&&id!==current&&!cartEnter;
   const productId=productEnter?new URLSearchParams(params).get('product'):state.selectedProduct;
@@ -103,7 +106,7 @@ function go(to,push=true,transition=null,duration=.3,restoreY=0){
   const from=rank(current),toRank=rank(id),direction=Math.sign(toRank-from);
   if(pagePush){pagePush();pagePush=null}
   let outgoing;
-  if(((transition==='NAV_PUSH'&&from>=0&&toRank>=0&&direction)||composeEnter||composeExit||onboardingTransition||loginFade||profileDirection||cartEnter||cartExit||productEnter||productExit)&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
+  if(((transition==='NAV_PUSH'&&from>=0&&toRank>=0&&direction)||composeEnter||composeExit||onboardingTransition||loginFade||profileDirection||communityDirection||cartEnter||cartExit||productEnter||productExit)&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
     const rect=app.getBoundingClientRect(),layer=document.createElement('div'),copy=frame.cloneNode(true);
     layer.className='page-push-viewport';layer.inert=true;layer.setAttribute('aria-hidden','true');
     Object.assign(layer.style,{left:rect.left+'px',width:rect.width+'px'});
@@ -130,13 +133,14 @@ function go(to,push=true,transition=null,duration=.3,restoreY=0){
     if(cartEnter||cartExit||productEnter||productExit){
       animateCommerceRoute({outgoing,incoming,cartEnter,cartExit,productEnter,productExit,thumbnail,productId});return;
     }
-    if(profileDirection){
+    if(profileDirection||communityDirection){
+      const tabDirection=profileDirection||communityDirection;
       const listSelector='.profile-project-list,.saved-products,[data-name="타임라인"],[data-node-id="518:3494"]';
       const oldList=outgoing.querySelector(listSelector),newList=incoming.querySelector(listSelector);
       outgoing.firstElementChild.style.visibility='hidden';
       const animations=[];
-      if(oldList){oldList.style.visibility='visible';animations.push(oldList.animate([{translate:'0 0'},{translate:`${-profileDirection*430}px 0`}],timing))}
-      if(newList)animations.push(newList.animate([{translate:`${profileDirection*430}px 0`},{translate:'0 0'}],timing));
+      if(oldList){oldList.style.visibility='visible';animations.push(oldList.animate([{translate:'0 0'},{translate:`${-tabDirection*430}px 0`}],timing))}
+      if(newList)animations.push(newList.animate([{translate:`${tabDirection*430}px 0`},{translate:'0 0'}],timing));
       app.style.overflow='clip';const cleanup=()=>{animations.forEach(a=>a.cancel());outgoing.remove();app.style.removeProperty('overflow');if(pagePush===cleanup)pagePush=null};pagePush=cleanup;Promise.all(animations.map(a=>a.finished)).then(cleanup,()=>{});return;
     }
     if(loginFade){
@@ -312,6 +316,7 @@ function animateCommerceRoute({outgoing,incoming,cartEnter,cartExit,productEnter
     const target=productEnter?photo?.getBoundingClientRect():findProductThumbnail(productId),source=productEnter?thumbnail:photo?.getBoundingClientRect();
     if(productEnter){app.style.zIndex='2';animate(incoming,[{opacity:0},{opacity:1}])}else animate(outgoing,[{opacity:1},{opacity:0}]);
     const distance=innerHeight/Math.min(1,innerWidth/430);
+    const cardRect=card?.getBoundingClientRect();
     animate(card,productEnter?[{translate:`0 ${distance}px`},{translate:'0 0'}]:[{translate:'0 0'},{translate:`0 ${distance}px`}]);
     if(source&&target&&source.width&&target.width){
       const image=document.createElement('img');image.src=productEnter?thumbnail.src:photo.querySelector('img').src;image.alt='';image.className='product-transition-image';
@@ -320,6 +325,14 @@ function animateCommerceRoute({outgoing,incoming,cartEnter,cartExit,productEnter
       const zoom=source.width/target.width;
       const transform=`translate(${source.left-target.left}px,${source.top-target.top}px) scale(${zoom})`;
       animate(image,[{transform},{transform:'translate(0,0) scale(1)'}]);photo.style.visibility='hidden';hidden.push(photo);
+      if(card){
+        const rect=cardRect,copy=card.cloneNode(true),scaleFactor=Math.min(1,innerWidth/430);
+        copy.inert=true;copy.setAttribute('aria-hidden','true');copy.classList.add('product-transition-card');
+        Object.assign(copy.style,{position:'fixed',left:rect.left+'px',top:rect.top+'px',width:card.offsetWidth+'px',margin:'0',zIndex:'46',transform:`scale(${scaleFactor})`,transformOrigin:'top left',pointerEvents:'none'});
+        document.body.append(copy);temporary.push(copy);card.style.visibility='hidden';hidden.push(card);
+        animate(copy,productEnter?[{translate:`0 ${innerHeight}px`},{translate:'0 0'}]:[{translate:'0 0'},{translate:`0 ${innerHeight}px`}]);
+      }
+
     }
   }
   app.style.overflow='clip';
