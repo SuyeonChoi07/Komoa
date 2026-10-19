@@ -20,10 +20,12 @@ for(const screenId of ['518:3609','518:3781',]){
     CATALOGUE[id]={id,title,name:title.replace(/^\[[^\]]+\]\s*/,''),type:title.match(/^\[([^\]]+)\]/)[1],price:Number(card.querySelector('[data-node-id$=";239:2455"]').textContent.replace(/\D/g,'')),image:card.querySelector('img').getAttribute('src'),maker:id==='cable-cardigan'?'소소니트':'Komoa'};
   }
 }
+for(const product of Object.values(CATALOGUE))product.detailImage='assets/product-photos/'+product.id+'.png';
+Object.assign(CATALOGUE['soso-oatmeal-pattern'],{title:'[도안] 꽃무늬 손모아 장갑',name:'꽃무늬 손모아 장갑',image:'assets/product-photos/soso-oatmeal-pattern.png'});
 const PRODUCT_COPY={
   'bamboo-needles-5mm':'5mm 대나무 줄바늘이에요. 도안에 안내된 바늘 규격을 확인해 주세요.',
   'autumn-beanie':'가을빛 골지 비니 도안입니다.',
-  'soso-oatmeal-pattern':'소소 시리즈의 도안입니다.',
+  'soso-oatmeal-pattern':'꽃무늬 손모아 장갑 도안입니다.',
   'cable-cardigan':'포근한 케이블 무늬와 여유로운 실루엣의 가디건이에요. 몸판부터 소매까지 차근차근 뜨는 과정을 담았습니다.',
   'sage-cardigan':'차분한 세이지 색감의 데일리 가디건 도안이에요. 일상에서 오래 함께할 나만의 가디건을 만들어 보세요.',
   'lace-bag':'레이스 무늬가 돋보이는 그물백 도안이에요. 가볍게 들기 좋은 나만의 가방을 만들어 보세요.',
@@ -56,12 +58,12 @@ function addToCart(id,control){
   if(control){control.setAttribute('aria-disabled','true');control.classList.add('commerce-disabled');setTimeout(()=>{control.setAttribute('aria-disabled','false');control.classList.remove('commerce-disabled')},1200)}
 }
 function openProduct(id){if(CATALOGUE[id])return go('product?product='+encodeURIComponent(id),true,'SLIDE_IN',.3)}
-function productImage(img,product){if(img){img.src=product.image;img.alt=product.name}}
+function productImage(img,product){if(img){img.src=product.image;img.alt=product.name;if(product.id==='soso-oatmeal-pattern')img.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:contain'}}
 function setNodeText(root,id,value){const el=q(id,root);if(el)el.textContent=value}
 function setControlEnabled(el,enabled,callback,label){interactive(el,enabled?callback:()=>{},label);el.setAttribute('aria-disabled',String(!enabled));el.classList.toggle('commerce-disabled',!enabled)}
 function renderProduct(root){
   const product=CATALOGUE[state.selectedProduct]||CATALOGUE['cable-cardigan'];root.dataset.productId=product.id;
-  productImage(q('518:3712',root).querySelector('img'),product);
+  const detailPhoto=q('518:3712',root).querySelector('img');detailPhoto.src=product.detailImage;detailPhoto.alt=product.name;detailPhoto.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;transform:none';
   setNodeText(root,'518:3717',product.title);setNodeText(root,'518:3719',product.maker);setNodeText(root,'518:3720',won(product.price));
   setNodeText(root,'518:3714','1/1');setNodeText(root,'518:3768',PRODUCT_COPY[product.id]);
   document.title=product.name+' · Komoa';
@@ -143,7 +145,7 @@ function fitCommerceFrame(){
 }
 function wireCommerce(root,id){
   for(const card of all('[data-name="검색결과"]',root)){
-    const productId=PRODUCT_NODES[card.dataset.nodeId],product=CATALOGUE[productId];if(!product)continue;card.dataset.productId=productId;
+    const productId=PRODUCT_NODES[card.dataset.nodeId],product=CATALOGUE[productId];if(!product)continue;card.dataset.productId=productId;if(productId==='soso-oatmeal-pattern'){const image=card.querySelector('img');productImage(image,product);image.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:contain';card.querySelector('[data-node-id$=";239:2454"]').textContent=product.title;}
     interactive(card,()=>openProduct(productId),product.name+' 상세보기');
     wireProductSave(card.querySelector('[data-name*="bookmark"]'),productId);
     const label=all('p',card).find(p=>p.textContent.includes('장바구니 담기'));if(label){const button=label.parentElement;interactive(button,()=>addToCart(productId,button),product.name+' 장바구니 담기');}

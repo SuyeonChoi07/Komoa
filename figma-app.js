@@ -319,8 +319,8 @@ function animateCommerceRoute({outgoing,incoming,cartEnter,cartExit,productEnter
     const cardRect=card?.getBoundingClientRect();
     animate(card,productEnter?[{translate:`0 ${distance}px`},{translate:'0 0'}]:[{translate:'0 0'},{translate:`0 ${distance}px`}]);
     if(source&&target&&source.width&&target.width){
-      const image=document.createElement('img');image.src=productEnter?thumbnail.src:photo.querySelector('img').src;image.alt='';image.className='product-transition-image';
-      Object.assign(image.style,{position:'fixed',left:target.left+'px',top:target.top+'px',width:target.width+'px',height:target.height+'px',objectFit:'cover',zIndex:'45',pointerEvents:'none',transformOrigin:'top left',maxWidth:'none'});document.body.append(image);temporary.push(image);
+      const image=document.createElement('img');image.src=photo.querySelector('img').src;image.alt='';image.className='product-transition-image';
+      Object.assign(image.style,{position:'fixed',left:target.left+'px',top:target.top+'px',width:target.width+'px',height:target.height+'px',objectFit:'contain',zIndex:'45',pointerEvents:'none',transformOrigin:'top left',maxWidth:'none'});document.body.append(image);temporary.push(image);
       // Keep a fixed aspect ratio throughout the zoom.
       const zoom=source.width/target.width;
       const transform=`translate(${source.left-target.left}px,${source.top-target.top}px) scale(${zoom})`;
