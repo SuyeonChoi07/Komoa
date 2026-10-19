@@ -89,7 +89,7 @@ function go(to,push=true,transition=null,duration=.3){
   if(window.deferButtonNavigation?.(()=>go(to,push,transition,duration)))return;
   const [base,params='']=to.split('?'),id=aliases[base]||routes[base]||base;if(!S[id])return;
   if(id===routes.notifications){if(!current)go('home',false);showOverlay(id);return}
-  const loginFade=current===routes.login&&[routes.signup,routes.home].includes(id);
+  const loginFade=(current===routes.login&&[routes.signup,routes.home].includes(id))||(current===routes.signup&&id===routes.home);
   const onboardingLogin=['631:1201','633:4646','633:4662'].includes(current)&&id===routes.login;
   const onboardingTransition=onboardingLogin||transition==='ONBOARDING_PUSH'||transition==='ONBOARDING_DISSOLVE';
   const composeEnter=id===routes.compose&&[routes.community,routes.qna].includes(current),composeExit=current===routes.compose&&[routes.community,routes.qna].includes(id);
