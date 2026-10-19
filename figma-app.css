@@ -187,3 +187,7 @@ input,textarea,[contenteditable="true"],[contenteditable="true"] *{-webkit-user-
 
 /* Preserve the source photo ratio for every product. */
 :is(#frame,.page-push-copy) [data-node-id="518:3712"] img{width:100%;height:100%;left:0;top:0;object-fit:cover;object-position:center}
+
+/* Align product specification labels and values consistently to the left. */
+:is(#frame,.page-push-copy) [data-node-id="518:3750"] > div{display:grid;grid-template-columns:80px minmax(0,1fr);gap:16px;width:100%;justify-content:start;text-align:left;align-items:start}
+:is(#frame,.page-push-copy) [data-node-id="518:3750"] p{text-align:left;white-space:normal;min-width:0}
