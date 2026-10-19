@@ -123,11 +123,14 @@ function go(to,push=true,transition=null,duration=.3){
       const dissolve=transition==='ONBOARDING_DISSOLVE',timing={duration:300,easing:dissolve?'ease-in-out':'ease-out'};
       const oldScreen=outgoing.querySelector('.onboarding-screen');
       if(!dissolve&&oldScreen&&incoming.matches('.onboarding-screen')){
-        // Keep both photos stationary; slide only the foreground elements.
+        // Keep shared controls and panel stationary; fade the photo and push only copy.
         oldScreen.style.background='transparent';
         const animations=[oldScreen.querySelector('.onboarding-photo').animate([{opacity:1},{opacity:0}],timing)];
-        for(const child of oldScreen.children)if(!child.matches('.onboarding-photo'))animations.push(child.animate([{translate:'0 0'},{translate:'-430px 0'}],timing));
-        for(const child of incoming.children)if(!child.matches('.onboarding-photo'))animations.push(child.animate([{translate:'430px 0'},{translate:'0 0'}],timing));
+        for(const child of oldScreen.children)if(!child.matches('.onboarding-photo,.onboarding-copy,.onboarding-skip'))child.remove();
+        // The outgoing photo must not cover the incoming fixed controls or white panel.
+        oldScreen.querySelector('.onboarding-photo').style.clipPath='inset(0 0 313px 0)';
+        animations.push(oldScreen.querySelector('.onboarding-copy').animate([{translate:'0 0'},{translate:'-430px 0'}],timing));
+        animations.push(incoming.querySelector('.onboarding-copy').animate([{translate:'430px 0'},{translate:'0 0'}],timing));
         app.style.overflow='clip';
         const cleanup=()=>{animations.forEach(animation=>animation.cancel());outgoing.remove();app.style.removeProperty('overflow');if(pagePush===cleanup)pagePush=null};pagePush=cleanup;Promise.all(animations.map(animation=>animation.finished)).then(cleanup,()=>{});return;
       }
