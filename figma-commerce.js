@@ -63,7 +63,7 @@ function setNodeText(root,id,value){const el=q(id,root);if(el)el.textContent=val
 function setControlEnabled(el,enabled,callback,label){interactive(el,enabled?callback:()=>{},label);el.setAttribute('aria-disabled',String(!enabled));el.classList.toggle('commerce-disabled',!enabled)}
 function renderProduct(root){
   const product=CATALOGUE[state.selectedProduct]||CATALOGUE['cable-cardigan'];root.dataset.productId=product.id;
-  const detailPhoto=q('518:3712',root).querySelector('img');detailPhoto.src=product.detailImage;detailPhoto.alt=product.name;detailPhoto.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;transform:none';
+  const detailPhoto=q('518:3712',root).querySelector('img');detailPhoto.src=product.detailImage;detailPhoto.alt=product.name;detailPhoto.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;transform:none';
   setNodeText(root,'518:3717',product.title);setNodeText(root,'518:3719',product.maker);setNodeText(root,'518:3720',won(product.price));
   setNodeText(root,'518:3714','1/1');setNodeText(root,'518:3768',PRODUCT_COPY[product.id]);
   document.title=product.name+' · Komoa';
