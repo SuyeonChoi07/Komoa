@@ -131,7 +131,12 @@ function go(to,push=true,transition=null,duration=.3,restoreY=0){
       animateCommerceRoute({outgoing,incoming,cartEnter,cartExit,productEnter,productExit,thumbnail,productId});return;
     }
     if(profileDirection){
-      const animations=[outgoing.animate([{translate:'0 0'},{translate:`${-profileDirection*100}% 0`}],timing),incoming.animate([{translate:`${profileDirection*100}% 0`},{translate:'0 0'}],timing)];
+      const listSelector='.profile-project-list,.saved-products,[data-name="타임라인"]';
+      const oldList=outgoing.querySelector(listSelector),newList=incoming.querySelector(listSelector);
+      outgoing.firstElementChild.style.visibility='hidden';
+      const animations=[];
+      if(oldList){oldList.style.visibility='visible';animations.push(oldList.animate([{translate:'0 0'},{translate:`${-profileDirection*430}px 0`}],timing))}
+      if(newList)animations.push(newList.animate([{translate:`${profileDirection*430}px 0`},{translate:'0 0'}],timing));
       app.style.overflow='clip';const cleanup=()=>{animations.forEach(a=>a.cancel());outgoing.remove();app.style.removeProperty('overflow');if(pagePush===cleanup)pagePush=null};pagePush=cleanup;Promise.all(animations.map(a=>a.finished)).then(cleanup,()=>{});return;
     }
     if(loginFade){
@@ -311,8 +316,8 @@ function animateCommerceRoute({outgoing,incoming,cartEnter,cartExit,productEnter
     if(source&&target&&source.width&&target.width){
       const image=document.createElement('img');image.src=productEnter?thumbnail.src:photo.querySelector('img').src;image.alt='';image.className='product-transition-image';
       Object.assign(image.style,{position:'fixed',left:target.left+'px',top:target.top+'px',width:target.width+'px',height:target.height+'px',objectFit:'cover',zIndex:'45',pointerEvents:'none',transformOrigin:'top left',maxWidth:'none'});document.body.append(image);temporary.push(image);
-      const transform=`translate(${source.left-target.left}px,${source.top-target.top}px) scale(${source.width/target.width},${source.height/target.height})`;
-      animate(image,[{transform},{transform:'translate(0,0) scale(1)'}]);photo.style.visibility='hidden';hidden.push(photo);
+      // Animate the actual box, so object-fit crops naturally as its aspect ratio changes.
+      animate(image,[{left:source.left+'px',top:source.top+'px',width:source.width+'px',height:source.height+'px'},{left:target.left+'px',top:target.top+'px',width:target.width+'px',height:target.height+'px'}]);photo.style.visibility='hidden';hidden.push(photo);
     }
   }
   app.style.overflow='clip';
