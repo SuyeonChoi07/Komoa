@@ -65,8 +65,10 @@ function renderProjectEditor(root,id){
   const logList=document.createElement('div');logList.className='project-log-list';recordArea.append(logList);
   const renderLogs=()=>{logList.replaceChildren();for(const log of p.logs){const row=document.createElement('div');row.className='f114';const date=document.createElement('p'),text=document.createElement('p');date.className='f115';text.className='f116 project-record-text';date.textContent=log.date;text.textContent=log.text;row.append(date,text);logList.append(row)}};renderLogs();
   const date=q(recordId,root).closest('[data-name="상세정보"]').querySelector('p');date.textContent=projectToday();
+  if(isView){q(recordIcon,root)?.remove();q(noteIcon,root)?.remove();q(recordId,root).closest('[data-name="상세정보"]').remove();q(noteId,root).textContent=p.note||'저장된 작업 메모가 없습니다.';if(!p.logs.length){const empty=document.createElement('p');empty.textContent='저장된 작업 기록이 없습니다.';logList.append(empty)}}else{
   finishes.push(projectEditor(q(recordId,root),q(recordIcon,root),'작업 기록',()=>p.logDraft||'',value=>{if(!value)return;p.logs.unshift({id:crypto.randomUUID(),date:projectToday(),text:value,rows:p.rows,stitches:p.stitches});p.logDraft='';persistProject();renderLogs()},true,'오늘 어디까지 떴나요? 다음에 기억할 내용을 적어 주세요.'));
   finishes.push(projectEditor(q(noteId,root),q(noteIcon,root),'작업 메모',()=>p.note,value=>{p.note=value;persistProject()},true,'작업하면서 잊지 말아야 할 것을 적어 보세요.'));
+  }
   const attachment=root.querySelector('[data-name="첨부함 - 전"]');if(attachment)mountAttachment(attachment,()=>p.attachment,value=>{const old=p.attachment;p.attachment=value;if(!persistProject()){p.attachment=old;return false}return true});
   if(!isView){
     const arc=q(isNew?'518:3313':'518:3265',root);arc.innerHTML='<svg class="project-arc" viewBox="0 0 378 206" role="progressbar" aria-label="제작 진행도" aria-valuemin="0" aria-valuemax="100"><path d="M42 198 A147 147 0 0 1 336 198" fill="none" stroke="#f3f5ec" stroke-width="10" stroke-linecap="round"/><path class="project-arc-value" d="M42 198 A147 147 0 0 1 336 198" fill="none" stroke="#899c55" stroke-width="10" stroke-linecap="round" pathLength="100"/></svg>';

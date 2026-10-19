@@ -28,11 +28,11 @@
 })();
 function wireRefreshedScreens(root,id){
   if(id===routes.intro){
-    const track=q('518:3989',root),handle=q('518:3990',root),arrow=q('518:3991',root);let start=null,dx=0;
+    const track=q('518:3989',root),handle=q('518:3990',root),arrow=q('518:3991',root);let start=null,dx=0;const label=q('518:3993',root);track.classList.add('intro-slide-track');track.append(handle,arrow,label);
     track.onclick=null;track.onkeydown=null;track.removeAttribute('role');track.removeAttribute('tabindex');
     for(const n of [handle,arrow,q('518:3993',root)])n.style.pointerEvents='none';
     track.setAttribute('role','slider');track.tabIndex=0;track.setAttribute('aria-label','오른쪽으로 밀어 Komoa 시작하기');track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax','100');track.setAttribute('aria-valuenow','0');track.style.touchAction='none';
-    const move=value=>{dx=Math.max(0,Math.min(233,value));for(const n of [handle,arrow])n.style.translate=dx+'px 0';track.setAttribute('aria-valuenow',String(Math.round(dx/233*100)))};
+    const move=value=>{dx=Math.max(0,Math.min(233,value));for(const n of [handle,arrow,label])n.style.translate=dx+'px 0';const t=dx/233;track.style.backgroundColor=`rgb(${219+36*t},${225+30*t},${205+50*t})`;track.setAttribute('aria-valuenow',String(Math.round(dx/233*100)))};
     track.onpointerdown=e=>{if(!e.isPrimary)return;start=e.clientX;track.setPointerCapture(e.pointerId)};
     track.onpointermove=e=>{if(start!==null)move((e.clientX-start)/Math.min(1,innerWidth/430))};
     track.onpointerup=()=>{start=null;if(dx>160)go('login');else move(0)};track.onpointercancel=()=>{start=null;move(0)};
@@ -46,7 +46,7 @@ function wireRefreshedScreens(root,id){
   }
   if(id===routes.signup){
     root.firstElementChild.classList.add('signup-refreshed');
-    for(const name of ['이름','핸들']){const input=root.querySelector('[aria-label="'+name+'"]');input.required=true;input.maxLength=name==='이름'?30:40;input.autocomplete=name==='이름'?'nickname':'username';input.placeholder=name==='이름'?'뜨개하루':'@knitting_days';input.value=state.fields[name==='이름'?'profileName':'profileHandle']??''}
+    for(const name of ['이름','핸들']){const input=root.querySelector('[aria-label="'+name+'"]');input.required=true;input.maxLength=name==='이름'?30:40;input.autocomplete=name==='이름'?'nickname':'username';input.placeholder=name==='이름'?'뜨개하루':'@knitting_days';input.value=name==='핸들'?normalizeHandle(state.fields.profileHandle):state.fields.profileName??'';if(name==='핸들')input.placeholder='knittingdays'}
     wireRequiredFeedback([...root.querySelectorAll('input[required]')]);
     const bio=root.querySelector('[contenteditable="true"]');if(bio){bio.style.width='100%';bio.style.whiteSpace='pre-wrap'}
     interactive(q('518:4032',root),()=>{const name=root.querySelector('[aria-label="이름"]'),handle=root.querySelector('[aria-label="핸들"]');if(!validateRequiredFields([name,handle]))return;state.fields.profileName=name.value.trim();state.fields.profileHandle=handle.value.trim();if(bio)state.fields.profileBio=bio.innerText.trim();save();go('home')},'가입하고 시작하기');
