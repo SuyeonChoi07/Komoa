@@ -1,7 +1,7 @@
 (() => {
   const desktop=matchMedia('(min-width: 601px)'),embedded=window.self!==window.top;
   if(embedded||!desktop.matches){
-    const sources=['figma-screens.js', 'figma-qna.js', 'figma-project-screens.js', 'figma-projects.js', 'figma-collection-screens.js', 'figma-refresh.js', 'figma-commerce.js', 'figma-search.js', 'figma-comment-screen.js', 'figma-posts.js', 'figma-app.js', 'button-motion.js'];
+    const sources=['figma-screens.js', 'figma-qna.js', 'figma-project-screens.js', 'figma-projects.js', 'figma-collection-screens.js', 'figma-refresh.js', 'onboarding.js', 'figma-commerce.js', 'figma-search.js', 'figma-comment-screen.js', 'figma-posts.js', 'figma-app.js', 'button-motion.js'];
     (async()=>{for(const src of sources)await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=src;script.onload=resolve;script.onerror=reject;document.head.append(script)})})().catch(()=>{document.getElementById('status').textContent='화면을 불러오지 못했습니다. 새로고침해 주세요.'});
     if(!embedded)desktop.addEventListener('change',()=>location.reload());
     return;

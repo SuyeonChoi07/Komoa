@@ -27,6 +27,7 @@
   screens['610:1549']={id:'610:1549',name:'로그인',width:430,height:932,html:`<div class="login-screen" data-node-id="610:1549" data-name="로그인"><div class="login-inner"><div class="login-logo"><div><img src="assets/figma-exact/67d71.png" alt="Komoa"></div><p>OUR LITTLE KNITTING CLUB</p></div><div class="login-content"><form class="login-form"><label class="login-field"><img src="assets/figma-exact/98860.svg" alt=""><input aria-label="아이디" autocomplete="username" placeholder="아이디 입력" required></label><label class="login-field"><img src="assets/figma-exact/b22b2.svg" alt=""><input aria-label="비밀번호" type="password" autocomplete="current-password" placeholder="비밀번호 입력" required></label><button type="submit" class="login-submit">로그인</button><div class="login-links"><button type="button" data-auth="recover">아이디 / 비밀번호 찾기</button><img src="assets/figma-exact/f9404.svg" alt=""><button type="button" data-auth="signup">회원가입</button></div></form><div class="login-divider"><img src="assets/figma-exact/a299e.svg" alt=""><span>or</span></div><div class="social-section"><p>SNS 계정으로 간편하게 시작하기</p><div class="social-buttons">${[['Google','0cbd6.svg'],['Apple','5256b.svg'],['LINE','a4e02.svg'],['Kakao','31c7b.svg']].map(([name,icon])=>`<button type="button" data-social="${name}" class="social-button ${name.toLowerCase()}"><span><img src="assets/figma-exact/${icon}" alt=""></span>${name} 계정으로 로그인 하기</button>`).join('')}</div></div></div></div></div>`};
 })();
 function wireRefreshedScreens(root,id){
+  wireOnboarding(root,id);
   if(id===routes.intro){
     const track=q('518:3989',root),handle=q('518:3990',root),arrow=q('518:3991',root);let start=null,dx=0;const label=q('518:3993',root);track.classList.add('intro-slide-track');track.append(handle,arrow,label);
     track.onclick=null;track.onkeydown=null;track.removeAttribute('role');track.removeAttribute('tabindex');
@@ -35,14 +36,14 @@ function wireRefreshedScreens(root,id){
     const move=value=>{dx=Math.max(0,Math.min(233,value));for(const n of [handle,arrow,label])n.style.translate=dx+'px 0';const t=dx/233;track.style.backgroundColor=`rgb(${219+36*t},${225+30*t},${205+50*t})`;track.setAttribute('aria-valuenow',String(Math.round(dx/233*100)))};
     track.onpointerdown=e=>{if(!e.isPrimary)return;start=e.clientX;track.setPointerCapture(e.pointerId)};
     track.onpointermove=e=>{if(start!==null)move((e.clientX-start)/Math.min(1,innerWidth/430))};
-    track.onpointerup=()=>{start=null;if(dx>160)go('login');else move(0)};track.onpointercancel=()=>{start=null;move(0)};
-    track.onkeydown=e=>{if(e.key==='ArrowRight')move(dx+30);if(['Enter',' '].includes(e.key)||dx>=233){e.preventDefault();go('login')}};
+    track.onpointerup=()=>{start=null;if(dx>160)go('631:1201',true,'ONBOARDING_DISSOLVE');else move(0)};track.onpointercancel=()=>{start=null;move(0)};
+    track.onkeydown=e=>{if(e.key==='ArrowRight')move(dx+30);if(['Enter',' '].includes(e.key)||dx>=233){e.preventDefault();go('631:1201',true,'ONBOARDING_DISSOLVE')}};
   }
   if(id===routes.login){
     const form=root.querySelector('form');form.noValidate=true;const fields=[...form.querySelectorAll('input')];wireRequiredFeedback(fields);form.onsubmit=e=>{e.preventDefault();if(validateRequiredFields(fields))go('home')};
     interactive(root.querySelector('[data-auth="signup"]'),()=>go('signup'),'회원가입');
     interactive(root.querySelector('[data-auth="recover"]'),()=>{announce('체험 화면에서는 계정 찾기를 제공하지 않습니다.');const message=document.createElement('p');message.className='auth-feedback';message.setAttribute('role','status');message.textContent='체험 화면에서는 계정 찾기를 제공하지 않습니다.';root.querySelector('.auth-feedback')?.remove();form.append(message)},'아이디 / 비밀번호 찾기');
-    root.querySelectorAll('[data-social]').forEach(button=>interactive(button,()=>go('home'),button.textContent.trim()));
+    root.querySelectorAll('[data-social]').forEach(button=>interactive(button,()=>go('home'),button.getAttribute('aria-label')||button.textContent.trim()));
   }
   if(id===routes.signup){
     root.firstElementChild.classList.add('signup-refreshed');

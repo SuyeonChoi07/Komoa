@@ -1,8 +1,8 @@
 'use strict';
 // Compiled, editable HTML/CSS from Figma page 518:3200; reference screenshots are never UI assets.
 const S=window.FIGMA_SCREENS,links=new Map(window.FIGMA_LINKS),app=document.getElementById('app'),frame=document.getElementById('frame');
-const aliases={'610:1386':'518:3609','572:1946':'518:3609','572:2043':'518:3609','570:1853':'518:3609','302:4050':'518:3469','302:3730':'518:3816'};
-const routes={home:'518:3609',community:'518:3549',qna:'572:2390',projects:'518:3202',counter:'518:3255',newProject:'518:3303',projectView:'580:2598',my:'518:3476',post:'518:3544',compose:'518:3576',product:'518:3710',searchResults:'518:3781',cart:'518:3816',checkout:'518:3840',orderComplete:'518:3866',notifications:'518:3469',editProfile:'518:3879',login:'610:1549',intro:'518:3908',signup:'518:3995'};
+const aliases={'610:1549':'632:1383','610:1386':'518:3609','572:1946':'518:3609','572:2043':'518:3609','570:1853':'518:3609','302:4050':'518:3469','302:3730':'518:3816'};
+const routes={home:'518:3609',community:'518:3549',qna:'572:2390',projects:'518:3202',counter:'518:3255',newProject:'518:3303',projectView:'580:2598',my:'518:3476',post:'518:3544',compose:'518:3576',product:'518:3710',searchResults:'518:3781',cart:'518:3816',checkout:'518:3840',orderComplete:'518:3866',notifications:'518:3469',editProfile:'518:3879',login:'632:1383',intro:'518:3908',signup:'518:3995'};
 let state;try{state=JSON.parse(localStorage.getItem('komoa-figma-v2')||'{}')}catch{state={}}state={saved:[],liked:[],counters:{},fields:{},...state};initCommerceState();initPostsState();initProjectsState();
 let pagePush=null;
 let current='',overlay=null,lastFocus=null,historyStack=[],uploadedPhoto='';
@@ -89,13 +89,13 @@ function go(to,push=true,transition=null,duration=.3){
   if(window.deferButtonNavigation?.(()=>go(to,push,transition,duration)))return;
   const [base,params='']=to.split('?'),id=aliases[base]||routes[base]||base;if(!S[id])return;
   if(id===routes.notifications){if(!current)go('home',false);showOverlay(id);return}
-  const introExit=current===routes.intro&&id===routes.login;
+  const onboardingTransition=transition==='ONBOARDING_PUSH'||transition==='ONBOARDING_DISSOLVE';
   const composeEnter=id===routes.compose&&[routes.community,routes.qna].includes(current),composeExit=current===routes.compose&&[routes.community,routes.qna].includes(id);
   const rank=value=>value===routes.home?0:[routes.community,routes.qna].includes(value)?1:value===routes.projects?2:['518:3476','518:4830','518:4895'].includes(value)?3:-1;
   const from=rank(current),toRank=rank(id),direction=Math.sign(toRank-from);
   if(pagePush){pagePush();pagePush=null}
   let outgoing;
-  if(((transition==='NAV_PUSH'&&from>=0&&toRank>=0&&direction)||composeEnter||composeExit||introExit)&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
+  if(((transition==='NAV_PUSH'&&from>=0&&toRank>=0&&direction)||composeEnter||composeExit||onboardingTransition)&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
     const rect=app.getBoundingClientRect(),layer=document.createElement('div'),copy=frame.cloneNode(true);
     layer.className='page-push-viewport';layer.inert=true;layer.setAttribute('aria-hidden','true');
     Object.assign(layer.style,{left:rect.left+'px',width:rect.width+'px'});
@@ -119,9 +119,12 @@ function go(to,push=true,transition=null,duration=.3){
   commit();
   if(outgoing){
     const timing={duration:300,easing:'cubic-bezier(0.22,1,0.36,1)'},incoming=frame.firstElementChild;
-    if(introExit){
-      const animation=outgoing.firstElementChild.animate([{scale:'1',opacity:1},{scale:'1.12',opacity:0}],{duration:500,easing:'cubic-bezier(0.22,1,0.36,1)'});
-      const cleanup=()=>{animation.cancel();outgoing.remove();if(pagePush===cleanup)pagePush=null};pagePush=cleanup;animation.finished.then(cleanup,()=>{});return;
+    if(onboardingTransition){
+      const dissolve=transition==='ONBOARDING_DISSOLVE',timing={duration:300,easing:dissolve?'ease-in-out':'ease-out'};
+      const exit=outgoing.animate(dissolve?[{opacity:1},{opacity:0}]:[{translate:'0 0'},{translate:'-100% 0'}],timing);
+      const enter=dissolve?null:incoming.animate([{translate:'100% 0'},{translate:'0 0'}],timing);
+      app.style.overflow='clip';
+      const cleanup=()=>{exit.cancel();enter?.cancel();outgoing.remove();app.style.removeProperty('overflow');if(pagePush===cleanup)pagePush=null};pagePush=cleanup;exit.finished.then(cleanup,()=>{});return;
     }
     if(composeEnter||composeExit){
       const target=composeEnter?incoming:outgoing.firstElementChild;
