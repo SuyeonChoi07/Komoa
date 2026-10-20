@@ -11,9 +11,18 @@ function refreshInteractionGuide(){
   interactionGuideFrame=0;if(!interactionGuideEnabled)return;
   if(!interactionGuideLayer){interactionGuideLayer=document.createElement('div');interactionGuideLayer.className='interaction-guide-layer';interactionGuideLayer.setAttribute('aria-hidden','true');document.body.append(interactionGuideLayer)}
   interactionGuideLayer.replaceChildren();
-  const selector='[role="button"],button,a[href],input:not([type="hidden"]),select,textarea,[contenteditable="true"],[tabindex="0"]';
+  const selector='[role="button"],button,a[href]';
   for(const element of document.querySelectorAll(selector)){
     if(element===interactionGuideLayer||element.closest('.interaction-guide-layer,.page-push-viewport,[aria-hidden="true"]'))continue;
+    const label=(element.getAttribute('aria-label')||'').trim(),text=element.textContent.trim();
+    const indicator=element.closest('.ad-dots,.onboarding-dots,[data-name*="인디케이터"],[data-name*="indicator"]');
+    const social=/계정으로 로그인|SNS|Google|Apple|LINE|Kakao/i.test(label+' '+text);
+    const profilePhoto=/프로필 사진/.test(label+' '+text)||element.closest('[data-name="프로필 사진"]');
+    const saved=element.matches('.product-save,.post-save,[data-saved-product]')||/보관함에 저장|보관함에서 해제/.test(label);
+    const back=/뒤로가기/.test(label)||element.matches('[data-name*="back"]');
+    const productDetail=/상세보기/.test(label)&&!!(element.dataset.productId||element.closest('[data-product-id]'));
+    const iconOnly=!text&&!!element.querySelector('img,svg,[data-name*="아이콘"],[data-name*="icon"]');
+    if(indicator||social||profilePhoto||saved||back||productDetail||iconOnly)continue;
     const style=getComputedStyle(element),rect=element.getBoundingClientRect();
     if(style.display==='none'||style.visibility==='hidden'||rect.width<=0||rect.height<=0||rect.bottom<0||rect.top>innerHeight||rect.right<0||rect.left>innerWidth)continue;
     const dot=document.createElement('i');dot.className='interaction-guide-dot';dot.style.left=Math.round(rect.right-3)+'px';dot.style.top=Math.round(rect.top)+'px';interactionGuideLayer.append(dot);
