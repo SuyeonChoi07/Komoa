@@ -107,9 +107,12 @@ function go(to,push=true,transition=null,duration=.3,restoreY=0){
   const composeEnter=id===routes.compose&&[routes.community,routes.qna].includes(current),composeExit=current===routes.compose&&[routes.community,routes.qna].includes(id);
   const rank=value=>value===routes.home?0:[routes.community,routes.qna].includes(value)?1:value===routes.projects?2:['518:3476','518:4830','518:4895'].includes(value)?3:-1;
   const from=rank(current),toRank=rank(id),direction=Math.sign(toRank-from);
+  const rankedPush=transition==='NAV_PUSH'&&from>=0&&toRank>=0&&direction;
+  const specifiedTransition=rankedPush||composeEnter||composeExit||onboardingTransition||loginFade||profileDirection||communityDirection||cartEnter||cartExit||productEnter||productExit||cartCheckoutFade||checkoutOrderCompleteFade||orderCompleteExit;
+  const defaultFade=!!current&&current!==id&&!specifiedTransition;
   if(pagePush){pagePush();pagePush=null}
   let outgoing;
-  if(((transition==='NAV_PUSH'&&from>=0&&toRank>=0&&direction)||composeEnter||composeExit||onboardingTransition||loginFade||profileDirection||communityDirection||cartEnter||cartExit||productEnter||productExit||cartCheckoutFade||checkoutOrderCompleteFade||orderCompleteExit)&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
+  if((specifiedTransition||defaultFade)&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
     const rect=app.getBoundingClientRect(),layer=document.createElement('div'),copy=frame.cloneNode(true);
     layer.className='page-push-viewport';layer.inert=true;layer.setAttribute('aria-hidden','true');
     Object.assign(layer.style,{left:rect.left+'px',width:rect.width+'px'});
@@ -205,6 +208,10 @@ function go(to,push=true,transition=null,duration=.3,restoreY=0){
       const animation=target.animate(composeEnter?[{translate:`0 ${distance}px`},{translate:'0 0'}]:[{translate:'0 0'},{translate:`0 ${distance}px`}],timing);
       const cleanup=()=>{animation.cancel();outgoing.remove();app.style.removeProperty('overflow');app.style.removeProperty('z-index');app.style.removeProperty('background');if(pagePush===cleanup)pagePush=null};
       pagePush=cleanup;animation.finished.then(cleanup,()=>{});return;
+    }
+    if(defaultFade){
+      const fadeTiming={duration:300,easing:'ease-in-out'},animations=[outgoing.animate([{opacity:1},{opacity:0}],fadeTiming),incoming.animate([{opacity:0},{opacity:1}],fadeTiming)];
+      const cleanup=()=>{animations.forEach(animation=>animation.cancel());outgoing.remove();if(pagePush===cleanup)pagePush=null};pagePush=cleanup;Promise.all(animations.map(animation=>animation.finished)).then(cleanup,()=>{});return;
     }
     const exit=outgoing.firstElementChild.animate([{translate:'0px'},{translate:`${-direction*outgoing.clientWidth}px`}],timing);
     const enter=incoming.animate([{transform:`translateX(${direction*100}%)`},{transform:'translateX(0)'}],timing);
