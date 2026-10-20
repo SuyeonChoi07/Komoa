@@ -16,7 +16,7 @@ function refreshInteractionGuide(){
     if(element===interactionGuideLayer||element.closest('.interaction-guide-layer,.page-push-viewport,[aria-hidden="true"]'))continue;
     const style=getComputedStyle(element),rect=element.getBoundingClientRect();
     if(style.display==='none'||style.visibility==='hidden'||rect.width<=0||rect.height<=0||rect.bottom<0||rect.top>innerHeight||rect.right<0||rect.left>innerWidth)continue;
-    const dot=document.createElement('i');dot.className='interaction-guide-dot';dot.style.left=Math.round(rect.left+rect.width/2)+'px';dot.style.top=Math.round(rect.top+rect.height/2)+'px';interactionGuideLayer.append(dot);
+    const dot=document.createElement('i');dot.className='interaction-guide-dot';dot.style.left=Math.round(rect.right-3)+'px';dot.style.top=Math.round(rect.top)+'px';interactionGuideLayer.append(dot);
   }
 }
 function queueInteractionGuideRefresh(){if(!interactionGuideEnabled)return;if(!interactionGuideFrame)interactionGuideFrame=requestAnimationFrame(refreshInteractionGuide);clearTimeout(interactionGuideTimer);interactionGuideTimer=setTimeout(()=>{interactionGuideTimer=0;if(!interactionGuideFrame)interactionGuideFrame=requestAnimationFrame(refreshInteractionGuide)},450)}
