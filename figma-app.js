@@ -94,6 +94,8 @@ function go(to,push=true,transition=null,duration=.3,restoreY=0){
   const communityRank=(route,tab)=>route===routes.qna?2:route===routes.community?(tab==='following'?1:0):-1;
   const communityFrom=communityRank(current,state.communityTab),communityTo=communityRank(id,new URLSearchParams(params).get('tab'));
   const communityDirection=communityFrom>=0&&communityTo>=0?Math.sign(communityTo-communityFrom):0;
+  const cartCheckoutFade=(current===routes.cart&&id===routes.checkout)||(current===routes.checkout&&id===routes.cart);
+  const orderCompleteExit=current===routes.orderComplete&&id!==routes.orderComplete;
   const cartEnter=id===routes.cart&&current!==id&&!!current,cartExit=current===routes.cart&&id!==current;
   const productEnter=id===routes.product&&current!==id,productExit=current===routes.product&&id!==current&&!cartEnter;
   const productId=productEnter?new URLSearchParams(params).get('product'):state.selectedProduct;
@@ -106,7 +108,7 @@ function go(to,push=true,transition=null,duration=.3,restoreY=0){
   const from=rank(current),toRank=rank(id),direction=Math.sign(toRank-from);
   if(pagePush){pagePush();pagePush=null}
   let outgoing;
-  if(((transition==='NAV_PUSH'&&from>=0&&toRank>=0&&direction)||composeEnter||composeExit||onboardingTransition||loginFade||profileDirection||communityDirection||cartEnter||cartExit||productEnter||productExit)&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
+  if(((transition==='NAV_PUSH'&&from>=0&&toRank>=0&&direction)||composeEnter||composeExit||onboardingTransition||loginFade||profileDirection||communityDirection||cartEnter||cartExit||productEnter||productExit||cartCheckoutFade||orderCompleteExit)&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
     const rect=app.getBoundingClientRect(),layer=document.createElement('div'),copy=frame.cloneNode(true);
     layer.className='page-push-viewport';layer.inert=true;layer.setAttribute('aria-hidden','true');
     Object.assign(layer.style,{left:rect.left+'px',width:rect.width+'px'});
@@ -130,6 +132,19 @@ function go(to,push=true,transition=null,duration=.3,restoreY=0){
   commit();
   if(outgoing){
     const timing={duration:300,easing:'cubic-bezier(0.22,1,0.36,1)'},incoming=frame.firstElementChild;
+    if(cartCheckoutFade){
+      const fadeTiming={duration:300,easing:'ease-in-out'},animations=[outgoing.animate([{opacity:1},{opacity:0}],fadeTiming),incoming.animate([{opacity:0},{opacity:1}],fadeTiming)];
+      if(id===routes.checkout){
+        const rows=[...incoming.querySelectorAll('.commerce-order-row')];
+        rows.forEach((row,index)=>animations.push(row.animate([{opacity:0},{opacity:1}],{duration:220,delay:120+index*70,easing:'ease-out',fill:'both'})));
+      }
+      const cleanup=()=>{animations.forEach(animation=>animation.cancel());outgoing.remove();if(pagePush===cleanup)pagePush=null};pagePush=cleanup;Promise.all(animations.map(animation=>animation.finished)).then(cleanup,()=>{});return;
+    }
+    if(orderCompleteExit){
+      const animation=outgoing.animate([{translate:'0 0'},{translate:`0 ${innerHeight}px`}],{duration:350,easing:'cubic-bezier(0.4,0,1,1)'});
+      app.style.overflow='clip';
+      const cleanup=()=>{animation.cancel();outgoing.remove();app.style.removeProperty('overflow');if(pagePush===cleanup)pagePush=null};pagePush=cleanup;animation.finished.then(cleanup,()=>{});return;
+    }
     if(cartEnter||cartExit||productEnter||productExit){
       animateCommerceRoute({outgoing,incoming,cartEnter,cartExit,productEnter,productExit,thumbnail,productId});return;
     }
@@ -276,8 +291,8 @@ function animateSearchOptions(next,previous){
 function wireNotificationPopup(root){
   const panel=root.firstElementChild;panel.classList.add('notification-panel');panel.tabIndex=-1;
   const heart=q('518:3473',root).querySelector('[data-name="알림 유형"]');heart.replaceChildren();const heartIcon=document.createElement('img');heartIcon.src='assets/figma-exact/5573b.svg';heartIcon.alt='';heartIcon.className='notification-heart';heart.append(heartIcon);
-  panel.querySelector('[data-name="아이콘 / back"]')?.remove();
-  const handle=document.createElement('button');handle.type='button';handle.className='notification-handle';handle.setAttribute('aria-label','알림창 닫기');handle.dataset.nodeId='605:1223';handle.onclick=()=>closeOverlay();panel.append(handle);
+  interactive(panel.querySelector('[data-name="아이콘 / back"]'),()=>closeOverlay(),'뒤로가기');
+  const handle=document.createElement('div');handle.className='notification-handle';handle.setAttribute('aria-hidden','true');handle.dataset.nodeId='605:1223';panel.append(handle);
   let gesture=null;
   panel.addEventListener('pointerdown',e=>{if(!e.isPrimary||e.button!==0)return;gesture={id:e.pointerId,x:e.clientX,y:e.clientY,drag:false};});
   panel.addEventListener('pointermove',e=>{if(!gesture||gesture.id!==e.pointerId)return;const dy=e.clientY-gesture.y,dx=e.clientX-gesture.x;if(dy<-10&&Math.abs(dy)>Math.abs(dx)){if(!gesture.drag){panel.getAnimations().forEach(a=>a.cancel());panel.setPointerCapture(e.pointerId);gesture.drag=true}e.preventDefault();panel.style.transform=`translateY(${dy/Math.min(1,innerWidth/430)}px)`;}});
@@ -338,3 +353,4 @@ function animateCommerceRoute({outgoing,incoming,cartEnter,cartExit,productEnter
   app.style.overflow='clip';
   const cleanup=()=>{animations.forEach(a=>a.cancel());temporary.forEach(n=>n.remove());hidden.forEach(n=>n.style.removeProperty('visibility'));outgoing.remove();app.style.removeProperty('z-index');app.style.removeProperty('overflow');if(pagePush===cleanup)pagePush=null};pagePush=cleanup;Promise.all(animations.map(a=>a.finished)).then(cleanup,()=>{});
 }
+
