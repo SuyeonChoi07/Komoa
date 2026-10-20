@@ -58,8 +58,9 @@ function renderProjectEditor(root,id){
   const isNew=id===routes.newProject,isView=id===routes.projectView;
   const p=isNew?(state.newProjectDraft??={id:'project-'+crypto.randomUUID(),name:'',rows:0,totalRows:0,stitches:0,totalStitches:0,note:'',logs:[],start:projectToday(),attachment:null}):state.projectData[state.selectedProject];
   root.dataset.projectId=p.id;const finishes=[],name=root.querySelector('[data-name="프로젝트 명"]');
-  finishes.push(projectEditor(name.querySelector('p'),name.querySelector('[data-name="edit"]'),'프로젝트 이름',()=>p.name,value=>{if(!value){announce('프로젝트 이름을 입력해 주세요.');return false}p.name=value;persistProject()},false,'프로젝트 이름'));
-  const recordId=isNew?'518:3327':isView?'580:2622':'518:3281',recordIcon=isNew?'518:3328':isView?'580:2623':'518:3282',noteId=isNew?'518:3337':isView?'580:2632':'518:3300',noteIcon=isNew?'518:3334':isView?'580:2629':'518:3297';
+  if(isView)name.querySelector('p').textContent=p.name;
+  else finishes.push(projectEditor(name.querySelector('p'),name.querySelector('[data-name="edit"]'),'프로젝트 이름',()=>p.name,value=>{if(!value){announce('프로젝트 이름을 입력해 주세요.');return false}p.name=value;persistProject()},false,'프로젝트 이름'));
+  const recordId=isNew?'518:3327':isView?'660:4950':'518:3281',recordIcon=isNew?'518:3328':isView?'660:4947':'518:3282',noteId=isNew?'518:3337':isView?'660:4919':'518:3300',noteIcon=isNew?'518:3334':isView?'660:4918':'518:3297';
   const recordArea=q(recordId,root).closest('[data-name="최근기록"]');
   all('[data-name="상세정보"]',recordArea).filter(n=>!n.contains(q(recordId,root))).forEach(n=>n.remove());
   const logList=document.createElement('div');logList.className='project-log-list';recordArea.append(logList);
@@ -78,16 +79,17 @@ function renderProjectEditor(root,id){
       const numeric=(node,field,label)=>interactive(node,()=>{if(node.querySelector('input'))return;const input=document.createElement('input');input.type='number';input.min='0';input.max='9999';input.className='project-number';input.setAttribute('aria-label',label);input.value=p[field];node.replaceChildren(input);const commit=()=>{const value=Number(input.value);if(Number.isInteger(value)&&value>=0&&value<=9999){p[field]=value;persistProject()}update()};input.onkeydown=e=>{e.stopPropagation();if(e.key==='Enter'){e.preventDefault();input.blur()}};input.onclick=e=>e.stopPropagation();input.onblur=commit;input.focus();input.select()},label+' 수정');numeric(number,key,index?'현재 코수':'현재 단수');numeric(target,total,index?'목표 코수':'목표 단수');update();
     });refresh();
   }else{
-    setText('580:2612',p.completed?'완성':'진행 중',root);setText('580:2613',(p.start||'시작일 미등록')+' ~',root);setText('580:5877',p.end||'완료일 설정',root);
-    interactive(q('580:5877',root),()=>{const node=q('580:5877',root);if(node.querySelector('input'))return;const input=document.createElement('input');input.type='date';input.setAttribute('aria-label','완료일');input.value=p.end?.replaceAll('.','-')||'';node.replaceChildren(input);input.onchange=()=>{p.end=input.value.replaceAll('-','.');p.completed=!!p.end;persistProject();setText('580:2612',p.completed?'완성':'진행 중',root)};input.onclick=e=>e.stopPropagation();input.focus()},'완료일 수정');
+    projectImage(q('658:4859',root),p);setText('658:4864',`${p.rows} / ${p.totalRows}단 · ${p.stitches}코`,root);setText('658:4865',projectPercent(p)+'%',root);updateProjectBar(q('658:4866',root),p);
+    setText('660:4901',p.completed?'완성':'진행 중',root);setText('660:4902',(p.start||'시작일 미등록')+'  ~',root);setText('660:4903',p.end||'완료일 설정',root);
+    interactive(q('660:4903',root),()=>{const node=q('660:4903',root);if(node.querySelector('input'))return;const input=document.createElement('input');input.type='date';input.setAttribute('aria-label','완료일');input.value=p.end?.replaceAll('.','-')||'';node.replaceChildren(input);input.onchange=()=>{p.end=input.value.replaceAll('-','.');p.completed=!!p.end;persistProject();setText('660:4901',p.completed?'완성':'진행 중',root)};input.onclick=e=>e.stopPropagation();input.focus()},'완료일 수정');
   }
-  const button=q(isNew?'518:3339':isView?'580:2634':'518:3302',root);button.classList.add('project-save-button');
+  const button=q(isNew?'518:3339':isView?'660:4921':'518:3302',root);button.classList.add('project-save-button');
   interactive(button,()=>{finishes.forEach(fn=>fn());if(!p.name){announce('프로젝트 이름을 입력해 주세요.');name.querySelector('[role="button"]').click();return}if(isNew){state.projectData[p.id]=p;state.activeProject=p.id;state.selectedProject=p.id;delete state.newProjectDraft}if(persistProject()){announce('프로젝트를 저장했습니다.');go('projects')}},'프로젝트 저장하기');
   const backButton=root.querySelector('[data-name="아이콘 / back"]');interactive(backButton,back,'뒤로');
 }
 function fitProjectsFrame(){
   if(!current)return;
-  const contentId=current===routes.newProject?'518:3304':current===routes.counter?'518:3256':current===routes.projectView?'580:2599':current===routes.projects?'518:3203':current===routes.compose?'518:3577':null;
+  const contentId=current===routes.newProject?'518:3304':current===routes.counter?'518:3256':current===routes.projectView?'660:4881':current===routes.projects?'518:3203':current===routes.compose?'518:3577':null;
   const content=contentId&&q(contentId,frame);if(content){let bottom=content.offsetTop+content.scrollHeight;if(current===routes.compose){const button=q('518:3608',frame);button.style.top=(bottom+20)+'px';bottom+=20+button.offsetHeight}frame.style.height=Math.max(932,bottom+120)+'px'}
 }
 function wireProjects(root,id){

@@ -191,3 +191,18 @@ input,textarea,[contenteditable="true"],[contenteditable="true"] *{-webkit-user-
 /* Align product specification labels and values consistently to the left. */
 :is(#frame,.page-push-copy) [data-node-id="518:3750"] > div{display:grid;grid-template-columns:80px minmax(0,1fr);gap:16px;width:100%;justify-content:start;text-align:left;align-items:start}
 :is(#frame,.page-push-copy) [data-node-id="518:3750"] p{text-align:left;white-space:normal;min-width:0}
+
+/* Project detail screen, synced to Figma node 660:4880. */
+.project-view-content{translate:-50% 0;position:absolute;display:flex;flex-direction:column;gap:30px;align-items:center;left:50%;top:30px;width:380px}
+.project-view-photo{height:241px;position:relative;flex-shrink:0;width:380px;overflow:hidden}
+.project-view-photo img{position:absolute;width:100%;height:102.62%;left:0;top:-1.31%;max-width:none;object-fit:cover}
+.project-view-title{display:flex;align-items:center;position:relative;flex-shrink:0;width:100%}
+.project-view-title p{font-family:Hahmlet,serif;font-weight:600;font-size:20px;line-height:30px;color:var(--komoa-text,#20231d);letter-spacing:-.5px;white-space:nowrap}
+.project-view-summary{display:flex;flex-direction:column;gap:20px;align-items:flex-start;position:relative;flex-shrink:0;width:100%}
+.project-view-progress{display:flex;flex-direction:column;gap:10px;align-items:flex-start;position:relative;flex-shrink:0;width:100%}
+.project-view-counts{display:flex;align-items:center;justify-content:space-between;font-family:Hahmlet,serif;font-size:12px;line-height:16px;color:#51574b;letter-spacing:-.2px;width:100%}
+.project-view-counts p:last-child{text-align:right;width:39px}
+.project-view-progress-track{background:#d0d7bf;height:6px;border-radius:3px;overflow:hidden;width:100%}
+.project-view-progress-track>div{background:var(--komoa-green,#899c55);height:6px;border-radius:3px;width:35%}
+.project-view-logs{display:flex;flex-direction:column;gap:10px;align-items:flex-start;position:relative;flex-shrink:0;width:380px}
+.project-view-note-title{display:flex;align-items:center;position:relative;flex-shrink:0}
