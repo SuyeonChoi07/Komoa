@@ -18,7 +18,7 @@
     const button=target.closest('button,[role="button"],[role="tab"],a[href]');
     if(!button||button.matches(':disabled,[aria-disabled="true"]'))return null;
     if(button.closest('.overlay-frame [data-name^="검색창"]')&&button.matches('[aria-label="검색하기"],[aria-label="초기화"]'))return button;
-    if(button.matches('[data-name="검색결과"],.saved-product-card,.search-product-card,[aria-label="검색창 열기"],.cart-icon-button,.community-tab')||
+    if(button.matches('[data-name="검색결과"],[data-name="게시글 timeline"],.saved-product-card,.search-product-card,[aria-label="검색창 열기"],.cart-icon-button,.community-tab')||
        button.closest('.overlay-frame [data-name^="검색창"],[data-name="프로필"]')||
        button.matches('[data-name="아이콘 / bell"],[data-name="아이콘 / bag"],[data-name="settings"]')||
        button.querySelector('[data-name="아이콘 / bell"],[data-name="아이콘 / bag"],[data-name="settings"]'))return null;
