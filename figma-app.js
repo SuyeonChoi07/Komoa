@@ -95,6 +95,7 @@ function go(to,push=true,transition=null,duration=.3,restoreY=0){
   const communityFrom=communityRank(current,state.communityTab),communityTo=communityRank(id,new URLSearchParams(params).get('tab'));
   const communityDirection=communityFrom>=0&&communityTo>=0?Math.sign(communityTo-communityFrom):0;
   const cartCheckoutFade=(current===routes.cart&&id===routes.checkout)||(current===routes.checkout&&id===routes.cart);
+  const checkoutOrderCompleteFade=(current===routes.checkout&&id===routes.orderComplete)||(current===routes.orderComplete&&id===routes.checkout);
   const orderCompleteExit=current===routes.orderComplete&&id!==routes.orderComplete;
   const cartEnter=id===routes.cart&&current!==id&&!!current,cartExit=current===routes.cart&&id!==current;
   const productEnter=id===routes.product&&current!==id,productExit=current===routes.product&&id!==current&&!cartEnter;
@@ -108,7 +109,7 @@ function go(to,push=true,transition=null,duration=.3,restoreY=0){
   const from=rank(current),toRank=rank(id),direction=Math.sign(toRank-from);
   if(pagePush){pagePush();pagePush=null}
   let outgoing;
-  if(((transition==='NAV_PUSH'&&from>=0&&toRank>=0&&direction)||composeEnter||composeExit||onboardingTransition||loginFade||profileDirection||communityDirection||cartEnter||cartExit||productEnter||productExit||cartCheckoutFade||orderCompleteExit)&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
+  if(((transition==='NAV_PUSH'&&from>=0&&toRank>=0&&direction)||composeEnter||composeExit||onboardingTransition||loginFade||profileDirection||communityDirection||cartEnter||cartExit||productEnter||productExit||cartCheckoutFade||checkoutOrderCompleteFade||orderCompleteExit)&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
     const rect=app.getBoundingClientRect(),layer=document.createElement('div'),copy=frame.cloneNode(true);
     layer.className='page-push-viewport';layer.inert=true;layer.setAttribute('aria-hidden','true');
     Object.assign(layer.style,{left:rect.left+'px',width:rect.width+'px'});
@@ -132,7 +133,7 @@ function go(to,push=true,transition=null,duration=.3,restoreY=0){
   commit();
   if(outgoing){
     const timing={duration:300,easing:'cubic-bezier(0.22,1,0.36,1)'},incoming=frame.firstElementChild;
-    if(cartCheckoutFade){
+    if(cartCheckoutFade||checkoutOrderCompleteFade){
       const fadeTiming={duration:300,easing:'ease-in-out'},animations=[outgoing.animate([{opacity:1},{opacity:0}],fadeTiming),incoming.animate([{opacity:0},{opacity:1}],fadeTiming)];
       if(id===routes.checkout){
         const rows=[...incoming.querySelectorAll('.commerce-order-row')];
