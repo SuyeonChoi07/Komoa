@@ -169,7 +169,10 @@ function wireCommerce(root,id){
   if(id===routes.product)renderProduct(root);
   if(id===routes.cart)renderCart(root);
   if(id===routes.checkout)renderCheckout(root);
-  if(id===routes.orderComplete)renderOrderComplete(root);
+  if(id===routes.orderComplete){
+    renderOrderComplete(root);
+    interactive(q('I518:3868;278:3727',root),()=>go('home',false),'홈으로 이동');
+  }
 }
 
 function savedProducts(){return state.saved.filter(key=>key.startsWith('product:')).map(key=>CATALOGUE[key.slice(8)]).filter(Boolean)}
