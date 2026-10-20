@@ -1,6 +1,9 @@
 .desktop-preview{height:100dvh;overflow:hidden;background:radial-gradient(ellipse at top,#d0d7bf 0%,#899c55 100%)}
 .preview-device{position:fixed;left:50%;top:50%;width:430px;height:932px;transform:translate(-50%,-50%) scale(var(--preview-scale));border-radius:32px;overflow:hidden;background:#fff;box-shadow:0 20px 65px #20231d33}
 .preview-device iframe{display:block;border:0;width:430px;height:932px;background:#fff}
+.preview-guide-toggle{position:fixed;width:68px;min-height:54px;padding:8px 6px;border:1px solid #f3f5ec;border-radius:14px;background:#445025;color:#fff;box-shadow:0 8px 24px #20231d33;font:600 12px/1.25 Hahmlet,serif;text-align:center;cursor:pointer;z-index:10}
+.preview-guide-toggle span,.preview-guide-toggle strong{display:block}.preview-guide-toggle strong{margin-top:3px;color:#d0d7bf;font-size:11px}.preview-guide-toggle[aria-pressed=true]{background:#fff;color:#445025}.preview-guide-toggle[aria-pressed=true] strong{color:#e30000}
+.interaction-guide-layer{position:fixed;inset:0;z-index:9999;overflow:hidden;pointer-events:none}.interaction-guide-dot{position:fixed;width:1px;height:1px;background:#f00;pointer-events:none}
 /* Hide the app scrollbar without changing scrolling behavior (including the desktop phone preview). */
 @media (max-width:600px){
   html,body{scrollbar-width:none;-ms-overflow-style:none}

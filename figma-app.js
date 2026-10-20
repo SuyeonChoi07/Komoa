@@ -5,13 +5,27 @@ const aliases={'610:1549':'632:1383','610:1386':'518:3609','572:1946':'518:3609'
 const routes={home:'518:3609',community:'518:3549',qna:'572:2390',projects:'518:3202',counter:'518:3255',newProject:'518:3303',projectView:'660:4880',my:'518:3476',post:'518:3544',compose:'518:3576',product:'518:3710',searchResults:'518:3781',cart:'518:3816',checkout:'518:3840',orderComplete:'518:3866',notifications:'518:3469',editProfile:'518:3879',login:'632:1383',intro:'518:3908',signup:'518:3995'};
 let state;try{state=JSON.parse(localStorage.getItem('komoa-figma-v2')||'{}')}catch{state={}}state={saved:[],liked:[],counters:{},fields:{},...state};initCommerceState();initPostsState();initProjectsState();
 let pagePush=null;
-let current='',overlay=null,lastFocus=null,historyStack=[],uploadedPhoto='';
+let current='',overlay=null,lastFocus=null,historyStack=[],uploadedPhoto='',interactionGuideLayer=null,interactionGuideFrame=0,interactionGuideTimer=0,interactionGuideEnabled=false;
 const q=(id,root=document)=>root.querySelector(`[data-node-id="${id}"]`),all=(sel,root=document)=>[...root.querySelectorAll(sel)];
+function refreshInteractionGuide(){
+  interactionGuideFrame=0;if(!interactionGuideEnabled)return;
+  if(!interactionGuideLayer){interactionGuideLayer=document.createElement('div');interactionGuideLayer.className='interaction-guide-layer';interactionGuideLayer.setAttribute('aria-hidden','true');document.body.append(interactionGuideLayer)}
+  interactionGuideLayer.replaceChildren();
+  const selector='[role="button"],button,a[href],input:not([type="hidden"]),select,textarea,[contenteditable="true"],[tabindex="0"]';
+  for(const element of document.querySelectorAll(selector)){
+    if(element===interactionGuideLayer||element.closest('.interaction-guide-layer,.page-push-viewport,[aria-hidden="true"]'))continue;
+    const style=getComputedStyle(element),rect=element.getBoundingClientRect();
+    if(style.display==='none'||style.visibility==='hidden'||rect.width<=0||rect.height<=0||rect.bottom<0||rect.top>innerHeight||rect.right<0||rect.left>innerWidth)continue;
+    const dot=document.createElement('i');dot.className='interaction-guide-dot';dot.style.left=Math.round(rect.left+rect.width/2)+'px';dot.style.top=Math.round(rect.top+rect.height/2)+'px';interactionGuideLayer.append(dot);
+  }
+}
+function queueInteractionGuideRefresh(){if(!interactionGuideEnabled)return;if(!interactionGuideFrame)interactionGuideFrame=requestAnimationFrame(refreshInteractionGuide);clearTimeout(interactionGuideTimer);interactionGuideTimer=setTimeout(()=>{interactionGuideTimer=0;if(!interactionGuideFrame)interactionGuideFrame=requestAnimationFrame(refreshInteractionGuide)},450)}
+function setInteractionGuide(enabled){interactionGuideEnabled=!!enabled;if(interactionGuideEnabled)queueInteractionGuideRefresh();else{cancelAnimationFrame(interactionGuideFrame);clearTimeout(interactionGuideTimer);interactionGuideFrame=interactionGuideTimer=0;interactionGuideLayer?.remove();interactionGuideLayer=null}}
 function ownProfileAvatar(previous){return state.avatar||(previous&&previous!=='assets/figma-exact/24baf.png'?previous:'assets/default-avatar.jpg')}
 function announce(text){document.getElementById('status').textContent=text}
 function save(){try{localStorage.setItem('komoa-figma-v2',JSON.stringify(state))}catch{announce('저장 공간을 확인해 주세요.')}}
 function setText(id,text,root=document){const n=q(id,root);if(n)(n.querySelector('p')||n).textContent=text}
-function interactive(el,fn,label){if(!el)return;el.setAttribute('role','button');el.tabIndex=0;if(label)el.setAttribute('aria-label',label);el.onclick=e=>{e.stopPropagation();if(el.getAttribute('aria-disabled')==='true'){e.preventDefault();return}fn(e)};el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el.click()}}}
+function interactive(el,fn,label){if(!el)return;el.setAttribute('role','button');el.tabIndex=0;if(label)el.setAttribute('aria-label',label);el.onclick=e=>{e.stopPropagation();if(el.getAttribute('aria-disabled')==='true'){e.preventDefault();return}fn(e)};el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el.click()}};queueInteractionGuideRefresh()}
 function scale(){const s=Math.min(1,innerWidth/430);frame.style.transform=`scale(${s})`;app.style.height=(parseFloat(frame.style.height)||932)*s+'px';document.getElementById('fixed-navigation')?.style.setProperty('--nav-scale',s);document.getElementById('fixed-header')?.style.setProperty('--header-scale',s);if(overlay){overlay.el.style.transform=`scale(${s})`;if(overlay.id===routes.notifications)overlay.el.style.height=Math.min(800,(innerHeight-20)/s)+'px'}}
 function mountNavigation(){let host=document.getElementById('fixed-navigation');if(!host){host=document.createElement('nav');host.id='fixed-navigation';host.setAttribute('aria-label','주요 메뉴');document.body.append(host)}const oldSelection=host.querySelector('[data-name="프로젝트 배경"]'),oldStyle=oldSelection&&!host.hidden?getComputedStyle(oldSelection):null,previous=oldStyle?{left:parseFloat(oldStyle.left),width:parseFloat(oldStyle.width),height:parseFloat(oldStyle.height),top:parseFloat(oldStyle.top)}:null;host.replaceChildren();const nav=frame.querySelector('[data-name="하단 내비게이션-수정"]');host.hidden=!nav;let bg=document.querySelector('.nav-bg');if(!bg){bg=document.createElement('div');bg.className='nav-bg';bg.setAttribute('aria-hidden','true');document.body.append(bg)}bg.hidden=!nav;if(nav){host.append(nav);animateNavigationSelection(nav,previous);for(const [name,dest]of [['홈','home'],['탐색','community'],['프로젝트','projects'],['MY','518:4895']])interactive(nav.querySelector('[data-name="탭 / '+name+'"]'),()=>go(dest,true,'NAV_PUSH'),name==='탐색'?'커뮤니티':name)}}
 
@@ -255,7 +269,8 @@ if(id===routes.notifications){wireNotificationPopup(root);state.readNotification
 }
 function fileUpload(el,avatar){const input=document.createElement('input');input.type='file';input.accept='image/jpeg,image/png,image/webp';input.className='file-control';input.setAttribute('aria-label',avatar?'프로필 사진 선택':'게시글 사진 선택');input.onchange=()=>{const file=input.files[0];if(!file)return;if(file.size>15*1024*1024){announce('15MB 이하의 사진을 선택해 주세요.');return}const reader=new FileReader();reader.onload=()=>{if(avatar){state.avatar=reader.result;const img=el.querySelector('img');if(img)img.src=reader.result;save()}else{uploadedPhoto=reader.result;announce(file.name+' 사진을 선택했습니다.')}};reader.readAsDataURL(file)};el.append(input)}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeOverlay();if(e.key==='Tab'&&overlay){const a=all('[tabindex="0"],input,select,[contenteditable]',overlay.el);if(!a.length)return;if(e.shiftKey&&document.activeElement===a[0]){e.preventDefault();a.at(-1).focus()}else if(!e.shiftKey&&document.activeElement===a.at(-1)){e.preventDefault();a[0].focus()}}});
-addEventListener('resize',()=>{fitCommerceFrame();scale()});addEventListener('popstate',()=>go(location.hash.slice(1).replace('-',':')||routes.home,false));
+addEventListener('resize',()=>{fitCommerceFrame();scale();queueInteractionGuideRefresh()});addEventListener('scroll',queueInteractionGuideRefresh,{passive:true});addEventListener('message',event=>{if(event.origin===location.origin&&event.data?.type==='komoa-interaction-guide')setInteractionGuide(event.data.enabled)});addEventListener('popstate',()=>go(location.hash.slice(1).replace('-',':')||routes.home,false));
+setInteractionGuide(localStorage.getItem('komoa-interaction-guide')==='true');
 go(location.hash.slice(1).replace('-',':')||routes.intro,false);
 document.fonts.ready.then(()=>{fitCommerceFrame();scale()});
 
