@@ -128,8 +128,19 @@ function renderCheckout(root){
     state.lastOrder={items:selected.map(p=>({...p})),...orderTotals(selected),createdAt:new Date().toISOString()};state.cart={};save();go('orderComplete');
   },'주문 완료하기');root.dataset.commerce='checkout';
 }
+let orderStatusTimer;
+function clearOrderStatusTimer(){clearTimeout(orderStatusTimer);orderStatusTimer=undefined}
+function paymentStatusElement(complete=false){
+  const status=document.createElement('div');status.className='payment-status';status.dataset.paymentStatus=complete?'complete':'processing';status.dataset.nodeId=complete?'670:5330':'670:5283';
+  status.innerHTML=complete?`<div class="payment-status-icon" data-node-id="670:5499"><div class="payment-complete-check" data-node-id="I670:5499;670:5477" data-name="아이콘 / check"><img alt="" src="assets/figma-exact/fca6f.svg"></div></div><div class="payment-status-copy payment-complete-copy" data-node-id="670:5138"><p>결제완료!</p><p>새로운 뜨개를 시작해 볼까요?</p></div>`:`<div class="payment-status-icon" data-node-id="670:5163" data-name="loading"><div class="payment-loading-dots" data-node-id="670:5139"><span class="payment-loading-dot" data-node-id="670:5126"></span><span class="payment-loading-dot" data-node-id="670:5127"></span><span class="payment-loading-dot" data-node-id="670:5128"></span></div></div><p class="payment-status-copy" data-node-id="670:5133">결제중입니다...</p>`;
+  return status;
+}
 function renderOrderComplete(root){
-  const order=state.lastOrder;all('p',root).forEach(p=>{if(p.textContent.includes('21,300원'))p.textContent=won(order?.total||0);if(!order&&p.textContent.trim()==='결제 완료')p.textContent='완료된 주문이 없어요.'});
+  clearOrderStatusTimer();
+  const order=state.lastOrder,container=q('518:3869',root),initial=container.firstElementChild;
+  all('p',root).forEach(p=>{if(p.textContent.includes('21,300원'))p.textContent=won(order?.total||0);if(!order&&p.textContent.trim()==='결제 완료')p.textContent='완료된 주문이 없어요.'});
+  const processing=paymentStatusElement(!order);initial.replaceWith(processing);
+  if(order)orderStatusTimer=setTimeout(()=>{if(current!==routes.orderComplete||!processing.isConnected)return;processing.replaceWith(paymentStatusElement(true));announce('결제가 완료되었습니다.');orderStatusTimer=undefined},5000);
 }
 function fitCommerceFrame(){
   fitProjectsFrame();
@@ -144,6 +155,7 @@ function fitCommerceFrame(){
   if(current===routes.product){const card=q('518:3715',frame),inner=q('518:3711',frame);frame.style.height=Math.max(1282,card.offsetTop+card.offsetHeight)+'px';inner.style.height=frame.style.height;}
 }
 function wireCommerce(root,id){
+  if(id!==routes.orderComplete)clearOrderStatusTimer();
   for(const card of all('[data-name="검색결과"]',root)){
     const productId=PRODUCT_NODES[card.dataset.nodeId],product=CATALOGUE[productId];if(!product)continue;card.dataset.productId=productId;if(productId==='soso-oatmeal-pattern'){const image=card.querySelector('img');productImage(image,product);image.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center';card.querySelector('[data-node-id$=";239:2454"]').textContent=product.title;}
     interactive(card,()=>openProduct(productId),product.name+' 상세보기');

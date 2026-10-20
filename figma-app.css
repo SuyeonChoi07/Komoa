@@ -13,6 +13,23 @@ input::placeholder{color:inherit;opacity:1}:is(#frame,.page-push-copy)>div,.over
 :is(#frame,.page-push-copy) .commerce-order-row>p:last-child{flex-shrink:0;white-space:nowrap}
 .commerce-empty{font-family:Hahmlet,serif;font-size:14px;line-height:20px;color:#51574b;padding:20px 0}
 .commerce-disabled{opacity:.5;cursor:default}
+.payment-status{display:flex;flex-direction:column;gap:15px;align-items:center;position:relative;width:350px}
+.payment-status-icon{display:flex;align-items:center;justify-content:center;width:75px;height:75px;flex-shrink:0;border-radius:100px;background:#ecf4f6}
+.payment-loading-dots{display:flex;gap:7px;align-items:center;justify-content:center}
+.payment-loading-dot{display:block;width:5px;height:5px;border-radius:50%;background:#899c55}
+.payment-loading-dot:nth-child(1){animation:payment-dot-one 1.5s linear infinite}
+.payment-loading-dot:nth-child(2){animation:payment-dot-two 1.5s linear infinite}
+.payment-loading-dot:nth-child(3){animation:payment-dot-three 1.5s linear infinite}
+.payment-status-copy{font:600 18px/25px Hahmlet,serif;color:var(--komoa-text,#20231d);text-align:center;letter-spacing:.216px;white-space:nowrap}
+.payment-complete-copy{line-height:0}
+.payment-complete-copy p{line-height:25px}
+.payment-complete-check{position:relative;width:30px;height:30px;color:#445025;rotate:270deg;scale:.2;animation:payment-complete-rotate 2s linear 1 both,payment-complete-scale 2s linear 1 both}
+.payment-complete-check img{width:100%;height:100%;max-width:none;filter:brightness(0) saturate(100%) invert(27%) sepia(14%) saturate(1324%) hue-rotate(31deg) brightness(93%) contrast(88%)}
+@keyframes payment-dot-one{0%{animation-timing-function:ease-out;scale:1.5}33.333%{scale:1}66.667%{animation-timing-function:ease-out;scale:1}100%{scale:1.5}}
+@keyframes payment-dot-two{0%{scale:1}33.333%{animation-timing-function:ease-out;scale:1.5}66.667%,100%{scale:1}}
+@keyframes payment-dot-three{0%,33.333%{scale:1}66.667%{animation-timing-function:ease-out;scale:1.5}100%{scale:1}}
+@keyframes payment-complete-rotate{0%{animation-timing-function:cubic-bezier(.45,1.45,.8,1);rotate:270deg}25%,100%{rotate:0deg}}
+@keyframes payment-complete-scale{0%{animation-timing-function:ease-out;scale:.2}25%,100%{scale:1}}
 :is(#frame,.page-push-copy) [data-node-id="518:3717"]{white-space:normal;max-width:380px;overflow-wrap:anywhere}
 :is(#frame,.page-push-copy) [data-node-id="518:3715"]{height:auto;min-height:879px}
 :is(#frame,.page-push-copy) .commerce-related-image{width:100%;height:100%;left:0;top:0;object-fit:cover}
